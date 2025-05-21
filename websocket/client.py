@@ -1,25 +1,32 @@
 import asyncio
 import websockets
+import numpy as np
+import cv2
 
-async def connect():
-    # Replace with your Android device's IP address
-    server_ip = "192.168.2.1"
-    port = 8887
-    uri = f"ws://{server_ip}:{port}"
+async def stream_images():
+    uri = "ws://192.168.80.84:8887"  # Replace with your Android server IP and port
 
-    try:
-        async with websockets.connect(uri) as websocket:
-            print("Connected to server")
+    async with websockets.connect(uri, max_size=None) as websocket:
+        print("Connected to the WebSocket server.")
 
-            await websocket.send("Hello from Python client!")
-            print("Sent: Hello from Python client!")
+        while True:
+            message = await websocket.recv()
 
-            # Wait for a response (e.g., "Hello World" from server)
-            response = await websocket.recv()
-            print(f"Received from server: {response}")
+            if isinstance(message, bytes):
+                # Convert byte array (JPEG) to numpy array
+                nparr = np.frombuffer(message, np.uint8)
+                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    except Exception as e:
-        print(f"Connection failed: {e}")
+                if img is not None:
+                    cv2.imshow("Android Camera Stream", img)
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
+                else:
+                    print("Failed to decode image.")
+            else:
+                print("Received text message:", message)
+
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    asyncio.run(connect())
+    asyncio.run(stream_images())
