@@ -46,11 +46,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         startServer();
+        // bluetooth = new SerialBluetooth(this, controller);
 
         streamer = new ImageStreamer(websocket);
 
         camera = new Camera(this, List.of(streamer));
-        bluetooth = new SerialBluetooth(this, controller);
+
     }
 
     public void startServer() {

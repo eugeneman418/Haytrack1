@@ -59,5 +59,6 @@ dependencies {
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
     implementation 'com.quickbirdstudios:opencv-contrib:4.5.3.0'
+    implementation "org.msgpack:msgpack-core:0.9.9"
 
 }
