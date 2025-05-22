@@ -4,6 +4,7 @@ import android.content.Context;
 import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.util.Range;
 
 import androidx.annotation.OptIn;
@@ -35,8 +36,8 @@ public class Camera {
                         CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
 
                         ImageAnalysis.Builder imageAnalysisBuilder = new ImageAnalysis.Builder();
-                        Camera2Interop.Extender extender = new Camera2Interop.Extender<>(imageAnalysisBuilder);
-                        extender.setCaptureRequestOption(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, new Range<>(60, 60));
+//                        Camera2Interop.Extender extender = new Camera2Interop.Extender<>(imageAnalysisBuilder); // not all phones support 60fps
+//                        extender.setCaptureRequestOption(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, new Range<>(60, 60));
 
                         ImageAnalysis imageAnalysis = imageAnalysisBuilder
                                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -45,6 +46,7 @@ public class Camera {
 
                         ExecutorService analysisExecutor = Executors.newSingleThreadExecutor();
                         imageAnalysis.setAnalyzer(analysisExecutor, image -> {
+                            Log.d("Camera", "Image: " + image.getHeight());
                             for (ImageAnalyzer analyzer : analyzers) {
                                 analyzer.process(image);
                             }

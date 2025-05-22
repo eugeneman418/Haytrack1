@@ -6,8 +6,8 @@
 #define TOUT 3
 #define TIMEOUT 50  // Timeout in milliseconds
 
-#define HORIZONAL_SERVO_PIN 18
-#define VERTICAL_SERVO_PIN 21
+#define HORIZONAL_SERVO_PIN 21
+#define VERTICAL_SERVO_PIN 18
 
 #define PULSE_MIN 500
 #define PULSE_MAX 2500

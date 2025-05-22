@@ -1,7 +1,14 @@
 package org.dare.haytrack1.websocket;
 
 import android.util.Log;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import org.dare.haytrack1.MainActivity;
+import org.dare.haytrack1.R;
+import org.dare.haytrack1.State;
+import org.dare.haytrack1.controller.ServoController;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -20,54 +27,91 @@ import java.util.Enumeration;
 
 public class Server extends WebSocketServer {
 
-    private final short MOVE_UP = 1;
-    private final short MOVE_DOWN = 2;
-    private final short MOVE_LEFT = 3;
-    private final short MOVE_RIGHT = 4;
+    private final String START_STREAMING = "START_STREAMING";
+    private final String STOP_STREAMING = "STOP_STREAMING";
 
+    private final String START_RECORDING = "START_RECORDING";
+    private final String STOP_RECORDING = "STOP_RECORDING";
 
+    private final String START_MANUAL = "MANUAL_CONTROL";
+    private final String STOP_MANUAL = "AI_TAKE_THE_WHEEL";
 
-    public Server(int port) throws UnknownHostException {
+    private ServoController servoController;
+    MainActivity context;
+    State globalState;
+
+    public Server(int port, MainActivity context, ServoController servoController, State globalState) throws UnknownHostException {
         super(new InetSocketAddress(port));
+        this.context = context;
+        this.servoController = servoController;
+        this.globalState = globalState;
     }
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        conn.send("Hello World");
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-
+        // Optional: Handle disconnection cleanup here
     }
 
     @Override
     public void onMessage(WebSocket conn, String message) {
+        context.runOnUiThread(() -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show());
 
+        // Optional: handle string-based commands like START/STOP here
+        switch (message) {
+            case START_STREAMING:
+                globalState.isStreaming = true;
+                Log.d("WebSocket", "Start manual control received");
+                break;
+            case STOP_STREAMING:
+                globalState.isStreaming = false;
+                Log.d("WebSocket", "Stop manual control received");
+                break;
+            case START_RECORDING:
+                Log.d("WebSocket", "Start recording received");
+                break;
+            case STOP_RECORDING:
+                Log.d("WebSocket", "Stop recording received");
+                break;
+            default:
+                Log.d("WebSocket", "Unknown string command: " + message);
+                break;
+        }
     }
 
     @Override
     public void onMessage(WebSocket conn, ByteBuffer message) {
-        try (MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(message);) {
-            short instruction = unpacker.unpackShort();
-            short value = unpacker.unpackShort();
-            Log.d("Server", "Instruction: " + instruction +", value: "+value);
+        try {
+            MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(message);
+            int length = unpacker.unpackArrayHeader();
+            if (length == 2) {
+                int move_horizontal = unpacker.unpackInt();
+                int move_vertical = unpacker.unpackInt();
+                servoController.move(move_horizontal, move_vertical);
+            } else {
+                Log.w("WebSocket", "Unexpected msgpack array length: " + length);
+            }
         } catch (IOException e) {
-            Log.e("Server", e.getMessage());
+            context.runOnUiThread(() -> Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show());
         }
-
-
     }
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
-
+        Log.e("Server", "Error: " + ex.getMessage());
     }
 
     @Override
     public void onStart() {
-        Log.d("Server", "Server started!");
-        setConnectionLostTimeout(500);
+        context.runOnUiThread(() ->
+                context.setIpText(getLocalIpAddress(), getPort())
+        );
+
+        setConnectionLostTimeout(100);
+        setReuseAddr(true);
     }
 
     public static String getLocalIpAddress() {
@@ -86,5 +130,4 @@ public class Server extends WebSocketServer {
         }
         return null;
     }
-
 }

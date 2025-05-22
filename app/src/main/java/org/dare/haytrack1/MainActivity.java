@@ -3,6 +3,7 @@ package org.dare.haytrack1;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -23,7 +24,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     // by enabling -g in install flags all permissions in manifest are auto granted
 
-    ServoController controller;
+    State globallState = new State();
+
+    ServoController controller = new ServoController();
     SerialBluetooth bluetooth;
 
     Server websocket;
@@ -46,20 +49,24 @@ public class MainActivity extends AppCompatActivity {
         });
 
         startServer();
-        // bluetooth = new SerialBluetooth(this, controller);
+        bluetooth = new SerialBluetooth(this, controller);
 
-        streamer = new ImageStreamer(websocket);
+        streamer = new ImageStreamer(websocket, globallState);
 
         camera = new Camera(this, List.of(streamer));
+    }
 
+    public void setIpText(String address, int port) {
+        TextView addressText = findViewById(R.id.ipAddress);
+        String uri = address + ":" + String.valueOf(port);
+        addressText.setText(uri);
     }
 
     public void startServer() {
         try {
-            websocket = new Server(PORT);
+            websocket = new Server(PORT, this, controller, globallState);
             websocket.start();
-            Toast.makeText(this, Server.getLocalIpAddress() + ":" + PORT,
-                    Toast.LENGTH_LONG).show();
+
 
 
 
@@ -67,6 +74,18 @@ public class MainActivity extends AppCompatActivity {
             Log.e("MainActivity", e.getMessage());
             Toast.makeText(this, "Error starting websocket server", Toast.LENGTH_LONG).show();
             finish();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (websocket != null) {
+            try {
+                websocket.stop(0);
+            } catch (InterruptedException e) {
+                Log.e("MainActivity", e.getMessage());
+            }
         }
     }
 }

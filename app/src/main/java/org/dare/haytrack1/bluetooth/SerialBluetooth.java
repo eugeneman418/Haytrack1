@@ -70,9 +70,7 @@ public class SerialBluetooth {
 
         Toast.makeText(context, DEVICE_NAME + " connected.", Toast.LENGTH_SHORT).show();
 
-        controller = new ServoController(connectedDevice.toSimpleDeviceInterface());
-        SimpleBluetoothDeviceInterface device = connectedDevice.toSimpleDeviceInterface();
-
+        controller.setDevice(connectedDevice.toSimpleDeviceInterface());
     }
 
     private void onError(Throwable error) {
