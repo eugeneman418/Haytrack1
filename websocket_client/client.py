@@ -147,7 +147,7 @@ class ClientGUI:
 
 
 def start_client():
-    uri = "ws://192.168.80.84:8981"
+    uri = "ws://192.168.80.84:8946"
     root = Tk()
     root.title("WebSocket Video Client")
 

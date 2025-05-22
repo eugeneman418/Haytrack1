@@ -3,6 +3,8 @@ package org.dare.haytrack1;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
 
     State globallState = new State();
 
+    Button recordButton;
+
     ServoController controller = new ServoController();
     SerialBluetooth bluetooth;
 
@@ -37,11 +41,24 @@ public class MainActivity extends AppCompatActivity {
     ImagePreviewer previewer;
 
     Camera camera;
+    private boolean isRecording = false;
 
     ImageView preview;
     private final int PORT_MIN = 8000;
     private final int PORT_MAX = 9000;
     private final int PORT = PORT_MIN + (int)(Math.random() * ((PORT_MAX - PORT_MIN) + 1));
+
+    public void startRecording() {
+        camera.startRecording(this);
+        recordButton.setText("Stop Recording");
+        isRecording = true;
+    }
+
+    public void stopRecording() {
+        camera.stopRecording();
+        recordButton.setText("Start Recording");
+        isRecording = false;
+    }
 
     @SuppressLint("MissingPermission")
     @Override
@@ -54,6 +71,19 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        recordButton = findViewById(R.id.recordButton);
+        recordButton.setOnClickListener(v -> {
+            if (!isRecording) {
+                startRecording();
+                recordButton.setText("Stop Recording");
+            } else {
+                camera.stopRecording();
+                recordButton.setText("Start Recording");
+            }
+            isRecording = !isRecording;
+        });
+
         preview = findViewById(R.id.imageView);
 
         bluetooth = new SerialBluetooth(this, controller);

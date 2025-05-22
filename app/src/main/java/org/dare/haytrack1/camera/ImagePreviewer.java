@@ -9,7 +9,7 @@ import androidx.camera.core.ImageProxy;
 
 public class ImagePreviewer extends ImageAnalyzer{
 
-    protected float ROTATION_CORRECTION = 270;
+    //protected float ROTATION_CORRECTION = 270;
 
     private ImageView view;
     private AppCompatActivity context;

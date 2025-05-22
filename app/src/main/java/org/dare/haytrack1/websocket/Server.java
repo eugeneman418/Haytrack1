@@ -71,9 +71,11 @@ public class Server extends WebSocketServer {
                 Log.d("WebSocket", "Stop manual control received");
                 break;
             case START_RECORDING:
+                context.startRecording();
                 Log.d("WebSocket", "Start recording received");
                 break;
             case STOP_RECORDING:
+                context.stopRecording();
                 Log.d("WebSocket", "Stop recording received");
                 break;
             default:

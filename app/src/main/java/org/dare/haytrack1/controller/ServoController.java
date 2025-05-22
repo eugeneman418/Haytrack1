@@ -19,6 +19,7 @@ public class ServoController {
 
     // Position between 0 to 79
     public boolean overwritePosition(int horizontal, int vertical) {
+        Log.d("ServoController", "horizontal: "+horizontal+ " vertical: "+vertical);
         if (device == null) {
             Log.e("ServoController", "Bluetooth not connected. Skipping send.");
             return false;
