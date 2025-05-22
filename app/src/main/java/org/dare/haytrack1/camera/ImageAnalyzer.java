@@ -24,7 +24,7 @@ abstract class ImageAnalyzer {
     }
     abstract public void process(ImageProxy img);
 
-    final float ROTATION_CORRECTION = 90;
+    protected float ROTATION_CORRECTION = 90;
 
     protected Mat imageProxyToRgbaMat(ImageProxy imageProxy) {
         // Get the image buffer from the first plane

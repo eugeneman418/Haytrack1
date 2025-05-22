@@ -3,6 +3,7 @@ package org.dare.haytrack1;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import org.dare.haytrack1.bluetooth.SerialBluetooth;
 import org.dare.haytrack1.camera.Camera;
+import org.dare.haytrack1.camera.ImagePreviewer;
 import org.dare.haytrack1.camera.ImageStreamer;
 import org.dare.haytrack1.controller.ServoController;
 import org.dare.haytrack1.websocket.Server;
@@ -32,9 +34,14 @@ public class MainActivity extends AppCompatActivity {
     Server websocket;
 
     ImageStreamer streamer;
+    ImagePreviewer previewer;
 
     Camera camera;
-    private final int PORT = 8887;
+
+    ImageView preview;
+    private final int PORT_MIN = 8000;
+    private final int PORT_MAX = 9000;
+    private final int PORT = PORT_MIN + (int)(Math.random() * ((PORT_MAX - PORT_MIN) + 1));
 
     @SuppressLint("MissingPermission")
     @Override
@@ -47,14 +54,19 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
+        preview = findViewById(R.id.imageView);
 
         bluetooth = new SerialBluetooth(this, controller);
+
+
         startServer();
 
         streamer = new ImageStreamer(websocket, globallState);
+        previewer = new ImagePreviewer(this, preview);
 
-        camera = new Camera(this, List.of(streamer));
+        camera = new Camera(this, List.of(previewer));
+
+
     }
 
     public void setIpText(String address, int port) {

@@ -9,7 +9,7 @@ from tkinter import Tk, Label, Button, Frame
 from PIL import Image, ImageTk
 
 # ==== GLOBAL CONFIGURATIONS ====
-MOVE_SPEED = -1
+MOVE_SPEED = -2
 CONTROL_INTERVAL = 0.1
 
 START_STREAMING = "START_STREAMING"
@@ -38,7 +38,7 @@ class WebSocketClient:
 
     async def receive_images(self):
         last_update = 0
-        target_interval = 1 / 60  # 60 FPS
+        target_interval = 1 / 30  # 60 FPS
 
         while self.running:
             try:
@@ -62,7 +62,12 @@ class WebSocketClient:
         while self.running:
             h = (self.key_state['d'] - self.key_state['a']) * MOVE_SPEED
             v = (self.key_state['s'] - self.key_state['w']) * MOVE_SPEED
-            packed = msgpack.packb([int(h), int(v)])
+            
+            if (h == 0 and v == 0):
+                await asyncio.sleep(CONTROL_INTERVAL)
+                continue
+            else:
+                packed = msgpack.packb([int(h), int(v)])
             try:
                 await self.ws.send(packed)
             except Exception as e:
@@ -142,7 +147,7 @@ class ClientGUI:
 
 
 def start_client():
-    uri = "ws://192.168.2.7:8887"
+    uri = "ws://192.168.80.84:8981"
     root = Tk()
     root.title("WebSocket Video Client")
 

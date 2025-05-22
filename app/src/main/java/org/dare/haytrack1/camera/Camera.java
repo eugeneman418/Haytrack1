@@ -46,7 +46,7 @@ public class Camera {
 
                         ExecutorService analysisExecutor = Executors.newSingleThreadExecutor();
                         imageAnalysis.setAnalyzer(analysisExecutor, image -> {
-                            Log.d("Camera", "Image: " + image.getHeight());
+
                             for (ImageAnalyzer analyzer : analyzers) {
                                 analyzer.process(image);
                             }

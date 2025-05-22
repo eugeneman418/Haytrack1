@@ -27,7 +27,7 @@ public class ImageStreamer extends ImageAnalyzer{
 
     private byte[] bitmapToJpeg(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream); // 80 is the quality
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 40, stream); // 80 is the quality
         return stream.toByteArray();
     }
 }
