@@ -48,8 +48,9 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        startServer();
+
         bluetooth = new SerialBluetooth(this, controller);
+        startServer();
 
         streamer = new ImageStreamer(websocket, globallState);
 
