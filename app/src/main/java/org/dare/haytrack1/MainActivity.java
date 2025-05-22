@@ -33,15 +33,16 @@ public class MainActivity extends AppCompatActivity {
     Button recordButton;
 
     ServoController controller = new ServoController();
+
     SerialBluetooth bluetooth;
 
     Server websocket;
 
-    ImageStreamer streamer;
+
     ImagePreviewer previewer;
 
     Camera camera;
-    private boolean isRecording = false;
+
 
     ImageView preview;
     private final int PORT_MIN = 8000;
@@ -51,13 +52,13 @@ public class MainActivity extends AppCompatActivity {
     public void startRecording() {
         camera.startRecording(this);
         recordButton.setText("Stop Recording");
-        isRecording = true;
+        globallState.isRecording = true;
     }
 
     public void stopRecording() {
         camera.stopRecording();
         recordButton.setText("Start Recording");
-        isRecording = false;
+        globallState.isRecording = false;
     }
 
     @SuppressLint("MissingPermission")
@@ -71,27 +72,23 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
         recordButton = findViewById(R.id.recordButton);
         recordButton.setOnClickListener(v -> {
-            if (!isRecording) {
+            if (!globallState.isRecording) {
                 startRecording();
-                recordButton.setText("Stop Recording");
             } else {
-                camera.stopRecording();
-                recordButton.setText("Start Recording");
+                stopRecording();
             }
-            isRecording = !isRecording;
         });
 
         preview = findViewById(R.id.imageView);
 
-        bluetooth = new SerialBluetooth(this, controller);
+        controller.initializeLogging(this);
 
+        bluetooth = new SerialBluetooth(this, controller);
 
         startServer();
 
-        streamer = new ImageStreamer(websocket, globallState);
         previewer = new ImagePreviewer(this, preview);
 
         camera = new Camera(this, List.of(previewer));

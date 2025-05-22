@@ -12,8 +12,8 @@ from PIL import Image, ImageTk
 MOVE_SPEED = -2
 CONTROL_INTERVAL = 0.1
 
-START_STREAMING = "START_STREAMING"
-STOP_STREAMING = "STOP_STREAMING"
+START_LOGGING = "START_LOGGING"
+STOP_LOGGING = "STOP_LOGGING"
 START_RECORDING = "START_RECORDING"
 STOP_RECORDING = "STOP_RECORDING"
 START_MANUAL = "MANUAL_CONTROL"
@@ -105,8 +105,8 @@ class ClientGUI:
         button_frame = Frame(root)
         button_frame.pack(pady=10)
 
-        self.btn_start_stream = Button(button_frame, text="Start Stream", command=lambda: self.send_command(START_STREAMING))
-        self.btn_stop_stream = Button(button_frame, text="Stop Stream", command=lambda: self.send_command(STOP_STREAMING))
+        self.btn_start_stream = Button(button_frame, text="Start Log", command=lambda: self.send_command(START_LOGGING))
+        self.btn_stop_stream = Button(button_frame, text="Stop Log", command=lambda: self.send_command(STOP_LOGGING))
         self.btn_start_record = Button(button_frame, text="Start Recording", command=lambda: self.send_command(START_RECORDING))
         self.btn_stop_record = Button(button_frame, text="Stop Recording", command=lambda: self.send_command(STOP_RECORDING))
         self.btn_manual = Button(button_frame, text="Manual Control", command=lambda: self.send_command(START_MANUAL))
@@ -147,7 +147,7 @@ class ClientGUI:
 
 
 def start_client():
-    uri = "ws://192.168.80.84:8946"
+    uri = "ws://192.168.2.1:8947"
     root = Tk()
     root.title("WebSocket Video Client")
 

@@ -1,7 +1,6 @@
 package org.dare.haytrack1.camera;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import androidx.camera.core.ImageProxy;
 
@@ -19,7 +18,6 @@ public class ImageStreamer extends ImageAnalyzer{
     }
     @Override
     public void process(ImageProxy img) {
-        if (!globalState.isStreaming) return;
         Bitmap bitmap = rotateBitmap(rgbaMatToBitmap(imageProxyToRgbaMat(img)), ROTATION_CORRECTION);
         server.broadcast(bitmapToJpeg(bitmap));
         bitmap.recycle();

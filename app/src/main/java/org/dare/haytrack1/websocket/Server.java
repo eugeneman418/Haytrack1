@@ -3,10 +3,7 @@ package org.dare.haytrack1.websocket;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import org.dare.haytrack1.MainActivity;
-import org.dare.haytrack1.R;
 import org.dare.haytrack1.State;
 import org.dare.haytrack1.controller.ServoController;
 import org.java_websocket.WebSocket;
@@ -27,8 +24,8 @@ import java.util.Enumeration;
 
 public class Server extends WebSocketServer {
 
-    private final String START_STREAMING = "START_STREAMING";
-    private final String STOP_STREAMING = "STOP_STREAMING";
+    private final String START_LOGGING = "START_LOGGING";
+    private final String STOP_LOGGING = "STOP_LOGGING";
 
     private final String START_RECORDING = "START_RECORDING";
     private final String STOP_RECORDING = "STOP_RECORDING";
@@ -62,13 +59,15 @@ public class Server extends WebSocketServer {
 
         // Optional: handle string-based commands like START/STOP here
         switch (message) {
-            case START_STREAMING:
-                globalState.isStreaming = true;
-                Log.d("WebSocket", "Start manual control received");
+            case START_LOGGING:
+                globalState.isLogging = true;
+                servoController.startLogging();
+
                 break;
-            case STOP_STREAMING:
-                globalState.isStreaming = false;
-                Log.d("WebSocket", "Stop manual control received");
+            case STOP_LOGGING:
+                globalState.isLogging = false;
+                servoController.stopLogging();
+
                 break;
             case START_RECORDING:
                 context.startRecording();

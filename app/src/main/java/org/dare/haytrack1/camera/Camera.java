@@ -32,12 +32,15 @@ import androidx.core.content.ContextCompat;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @OptIn(markerClass = ExperimentalCamera2Interop.class)
 public class Camera {
+    private final String SAVE_PATH = "/HayTrack";
 
     private VideoCapture<Recorder> videoCapture;
     private Recording currentRecording;
@@ -99,9 +102,10 @@ public class Camera {
         if (videoCapture == null) return;
 
         ContentValues contentValues = new ContentValues();
-        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "recording_" + System.currentTimeMillis());
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "recording_" + timestamp);
         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
-        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES);
+        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + SAVE_PATH);
 
         MediaStoreOutputOptions mediaStoreOutputOptions = new MediaStoreOutputOptions.Builder(
                 context.getContentResolver(),
@@ -115,7 +119,6 @@ public class Camera {
 
         currentRecording = videoCapture.getOutput()
                 .prepareRecording(context, mediaStoreOutputOptions)
-                .withAudioEnabled() // Optional: only if you need audio
                 .start(ContextCompat.getMainExecutor(context), videoRecordEvent -> {
                     if (videoRecordEvent instanceof VideoRecordEvent.Start) {
                         Log.d("CameraX", "Recording started");
