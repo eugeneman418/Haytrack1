@@ -40,7 +40,7 @@ import java.util.concurrent.Executors;
 
 @OptIn(markerClass = ExperimentalCamera2Interop.class)
 public class Camera {
-    private final String SAVE_PATH = "/HayTrack";
+    //private final String SAVE_PATH = "/HayTrack";
 
     private VideoCapture<Recorder> videoCapture;
     private Recording currentRecording;
@@ -100,34 +100,51 @@ public class Camera {
     @SuppressLint("MissingPermission")
     public void startRecording(Context context) {
         if (videoCapture == null) return;
-
-        ContentValues contentValues = new ContentValues();
         String timestamp = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
-        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "recording_" + timestamp);
-        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
-        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + SAVE_PATH);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            // Use MediaStoreOutputOptions for Android 10+
+            ContentValues contentValues = new ContentValues();
 
-        MediaStoreOutputOptions mediaStoreOutputOptions = new MediaStoreOutputOptions.Builder(
-                context.getContentResolver(),
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-        )
-                .setContentValues(contentValues)
-                .build();
+            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, "recording_" + timestamp);
+            contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
+            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES);
 
-//        File outputFile = new File(context.getExternalFilesDir(null), "video_" + System.currentTimeMillis() + ".mp4");
-//        FileOutputOptions options = new FileOutputOptions.Builder(outputFile).build();
+            MediaStoreOutputOptions mediaStoreOutputOptions = new MediaStoreOutputOptions.Builder(
+                    context.getContentResolver(),
+                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            )
+                    .setContentValues(contentValues)
+                    .build();
 
-        currentRecording = videoCapture.getOutput()
-                .prepareRecording(context, mediaStoreOutputOptions)
-                .start(ContextCompat.getMainExecutor(context), videoRecordEvent -> {
-                    if (videoRecordEvent instanceof VideoRecordEvent.Start) {
-                        Log.d("CameraX", "Recording started");
-                    } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
-                        Log.d("CameraX", "Recording finalized: " +
-                                ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri());
-                    }
-                });
+            currentRecording = videoCapture.getOutput()
+                    .prepareRecording(context, mediaStoreOutputOptions)
+                    .start(ContextCompat.getMainExecutor(context), this::handleRecordingEvent);
+
+        } else {
+            // Use FileOutputOptions for Android 9 and below
+            // this is saved in Android/data/org.dare.haytrack1/files/Movies/
+            File outputDir = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+            if (outputDir != null && !outputDir.exists()) outputDir.mkdirs();
+
+            File outputFile = new File(outputDir, "recording_" + timestamp + ".mp4");
+
+            FileOutputOptions fileOutputOptions = new FileOutputOptions.Builder(outputFile).build();
+
+            currentRecording = videoCapture.getOutput()
+                    .prepareRecording(context, fileOutputOptions)
+                    .start(ContextCompat.getMainExecutor(context), this::handleRecordingEvent);
+        }
     }
+
+    private void handleRecordingEvent(VideoRecordEvent event) {
+        if (event instanceof VideoRecordEvent.Start) {
+            Log.d("CameraX", "Recording started");
+        } else if (event instanceof VideoRecordEvent.Finalize) {
+            Log.d("CameraX", "Recording finalized: " +
+                    ((VideoRecordEvent.Finalize) event).getOutputResults().getOutputUri());
+        }
+    }
+
 
     public void stopRecording() {
         if (currentRecording != null) {
